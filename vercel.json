@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "https://gkilpgtmzhyjwanctfuu.supabase.co/functions/v1/jr-portal-fornecedor"
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://gkilpgtmzhyjwanctfuu.supabase.co/functions/v1/jr-portal-fornecedor"
+    }
+  ]
+}
