@@ -69,13 +69,13 @@ b.disabled=true;b.textContent="Preparando...";
 if(!window.PDFLib)throw Error("Biblioteca do PDF não carregou. Atualize a página.");
 const {PDFDocument,StandardFonts,rgb}=window.PDFLib;
 const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);
-const clean=s=>String(s??"").normalize("NFC").replace(/[^\\x20-\\x7E\\u00C0-\\u00FF]/g," ");
+const clean=s=>String(s??"").normalize("NFC").replace(/[^\x20-\x7E\u00C0-\u00FF]/g," ");
 const wrap=(s,max=82)=>{let words=clean(s).split(/\\s+/),out=[],line="";for(let w of words){let n=line?line+" "+w:w;if(n.length>max){if(line)out.push(line);line=w}else line=n}if(line)out.push(line);return out};
 const addText=(title,lines)=>{let pg=pdf.addPage([595.28,841.89]),y=800;pg.drawText(clean(title),{x:42,y,size:18,font:bold,color:rgb(.06,.17,.21)});y-=30;for(let raw of lines){for(let ln of wrap(raw)){if(y<55){pg=pdf.addPage([595.28,841.89]);y=800}pg.drawText(clean(ln),{x:42,y,size:10,font});y-=15}}};
 const total=ITEMS.reduce((s,x)=>s+Number(x.valor||0),0),docs=ITEMS.reduce((s,x)=>s+(x.anexos?.length||0),0);
 let lines=["Competência: "+$("month").selectedOptions[0].text,"Lançamentos: "+ITEMS.length,"Comprovantes anexados: "+docs,"Valor total lançado: "+money(total),"Observações: "+($("monthNote").value||"Sem observações."),"","LANÇAMENTOS"];
 for(let x of [...ITEMS].sort((a,b)=>a.data.localeCompare(b.data)))lines.push(x.data+" | "+x.categoria+" | "+x.descricao+" | "+money(x.valor)+" | "+x.status+" | "+(x.anexos?.length||0)+" anexo(s)");
-addText("JR Reciclagem - Fechamento do Contador",lines);
+addText("JR RECICLAGEM - FECHAMENTO DO CONTADOR",lines);
 let ord=1,done=0;
 for(let x of [...ITEMS].sort((a,b)=>a.data.localeCompare(b.data))){
  for(let f of (x.anexos||[])){
