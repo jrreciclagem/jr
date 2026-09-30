@@ -12,14 +12,14 @@ main{padding:27px}.top{display:flex;justify-content:space-between;gap:14px;align
 .modal{position:fixed;inset:0;background:rgba(5,22,28,.52);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.on{display:flex}.dialog{background:#fff;border-radius:17px;padding:19px;width:min(650px,100%);max-height:92vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.full{grid-column:1/-1}label{font-size:12px;font-weight:800;color:#54676d}textarea{min-height:82px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.empty{text-align:center;color:var(--muted);padding:26px}.note{font-size:13px;padding:11px;background:#eef8f5;border:1px solid #d4eee5;border-radius:11px;color:#285f52}
 .toast{position:fixed;right:18px;bottom:18px;background:#102b36;color:#fff;padding:11px 15px;border-radius:10px;display:none;z-index:50}.login{position:fixed;inset:0;background:#10262f;display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}.loginbox{width:min(390px,100%);background:#fff;border-radius:19px;padding:24px}.loginbox h1{margin:0 0 5px}.loginbox p{font-size:13px;color:var(--muted)}.loginbox input{width:100%;margin:7px 0 10px}.bottom{display:none}
 @media(max-width:900px){.app{display:block}.side{display:none}main{padding:15px 12px 75px}.top{align-items:flex-start;flex-direction:column}.cards{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.bottom{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:10}.bottom button{border:0;background:#fff;padding:10px 3px;font-size:10px;color:#5a6d73}.bottom button.on{color:#15856d;font-weight:900}.top h1{font-size:23px}}
-</style><script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></head><body>
+</style><script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script></head><body>
 <div class="login" id="login"><div class="loginbox"><h1>JR Reciclagem</h1><p>Fechamento do Contador • acesso administrativo</p><input id="pass" type="password" placeholder="Senha"><button class="primary" style="width:100%" id="loginBtn">Entrar</button><div id="loginMsg" class="meta"></div></div></div>
 <div class="app"><aside class="side"><div class="brand">JR Reciclagem<small>Fechamento do Contador</small></div><div class="nav"><button data-p="inicio" class="on">▣ Início</button><button data-p="lanc">≡ Lançamentos</button><button data-p="fechar">✓ Fechamento</button><button data-p="hist">◷ Histórico</button><button data-p="config">⚙ Configurações</button></div></aside>
 <main><div class="top"><div><h1>Fechamento do Contador</h1><div class="sub">Comprovantes online no celular e no PC.</div></div><div><select id="month"></select> <button class="primary" id="newBtn">+ Novo lançamento</button></div></div>
 <section id="inicio" class="page on"><div class="card quick"><div class="head"><div><h2>📥 Caixa rápida de comprovantes</h2><div class="meta">PC: Ctrl+V ou arraste. Celular: tire foto ou escolha arquivo.</div></div><button class="primary" id="pickBtn">Adicionar comprovante</button></div><div class="drop" id="drop"><div><b>Cole com Ctrl+V</b><br><span class="meta">ou arraste uma foto/PDF</span></div></div><input id="quickFile" type="file" accept="image/*,.pdf" capture="environment" hidden></div>
 <div class="cards"><div class="card metric"><span>Pendentes</span><b id="m1">0</b></div><div class="card metric"><span>Conferidos</span><b id="m2">0</b></div><div class="card metric"><span>Documentos</span><b id="m3">0</b></div><div class="card metric"><span>Valor lançado</span><b id="m4">R$ 0,00</b></div></div><div class="grid2"><div class="card"><div class="head"><h2>Recentes</h2></div><div class="list" id="recent"></div></div><div class="card"><div class="head"><h2>O que falta este mês?</h2></div><div id="missing"></div></div></div></section>
 <section id="lanc" class="page"><div class="toolbar"><input id="search" placeholder="Buscar..."><select id="fcat"></select><select id="fst"><option value="">Todos os status</option><option>Pendente</option><option>Conferido</option><option>Enviado ao contador</option></select></div><div class="table"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Anexos</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
-<section id="fechar" class="page"><div class="grid2"><div class="card"><div class="head"><h2>Checklist do mês</h2></div><div id="check"></div></div><div class="card"><div class="head"><h2>Fechamento</h2></div><div class="note">Confira o mês e marque quando tiver encaminhado ao contador.</div><div class="field" style="margin-top:12px"><label>Observações para o contador</label><textarea id="monthNote"></textarea></div><div class="foot" style="justify-content:flex-start;flex-wrap:wrap"><button class="secondary" id="reportBtn">Resumo</button><button class="primary" id="fullPdfBtn">PDF completo + comprovantes</button><button class="secondary" id="sentBtn">Marcar como enviado</button></div></div></div></section>
+<section id="fechar" class="page"><div class="grid2"><div class="card"><div class="head"><h2>Checklist do mês</h2></div><div id="check"></div></div><div class="card"><div class="head"><h2>Fechamento</h2></div><div class="note">Confira o mês e marque quando tiver encaminhado ao contador.</div><div class="field" style="margin-top:12px"><label>Observações para o contador</label><textarea id="monthNote"></textarea></div><div class="foot" style="justify-content:flex-start;flex-wrap:wrap"><button class="secondary" id="reportBtn">Resumo</button><button class="primary" id="fullPdfBtn">PDF completo + comprovantes</button><button class="secondary" id="zipBtn">Pacote ZIP do contador</button><button class="secondary" id="sentBtn">Marcar como enviado</button></div></div></div></section>
 <section id="hist" class="page"><div class="card"><div class="head"><h2>Histórico</h2></div><div class="list" id="history"></div></div></section>
 <section id="config" class="page"><div class="card"><div class="head"><h2>Configurações</h2></div><p class="meta">Versão online • dados e comprovantes ficam salvos no banco da JR.</p><button class="secondary" id="logout">Sair deste aparelho</button></div></section></main></div>
 <nav class="bottom"><button data-p="inicio" class="on">⌂<br>Início</button><button data-p="lanc">≡<br>Lançar</button><button data-p="fechar">✓<br>Fechar</button><button data-p="hist">◷<br>Histórico</button><button data-p="config">⚙<br>Config</button></nav>
@@ -101,5 +101,44 @@ b.textContent="Finalizando PDF...";
 let bytes=await pdf.save(),blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");
 a.href=url;a.download="JR_Fechamento_"+$("month").value+".pdf";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast("PDF completo gerado");
 }catch(e){toast(e.message||"Erro ao gerar PDF")}finally{b.disabled=false;b.textContent=old}};
+
+$("zipBtn").onclick=async()=>{let b=$("zipBtn"),old=b.textContent;try{
+  b.disabled=true;b.textContent="Preparando ZIP...";
+  if(!window.JSZip)throw Error("Biblioteca ZIP não carregou. Atualize a página.");
+  const zip=new JSZip(),comp=$("month").value;
+  const safe=s=>String(s||"arquivo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9._ -]/g,"_").replace(/\s+/g," ").trim();
+  const ordered=[...ITEMS].sort((a,b)=>a.data.localeCompare(b.data));
+  let resumo="JR RECICLAGEM - FECHAMENTO DO CONTADOR\nCompetência: "+$("month").selectedOptions[0].text+"\n\n";
+  resumo+="Lançamentos: "+ordered.length+"\n";
+  resumo+="Comprovantes: "+ordered.reduce((s,x)=>s+(x.anexos?.length||0),0)+"\n";
+  resumo+="Valor total: "+money(ordered.reduce((s,x)=>s+Number(x.valor||0),0))+"\n";
+  resumo+="Observações: "+($("monthNote").value||"Sem observações.")+"\n\nLANÇAMENTOS\n";
+  ordered.forEach((x,i)=>{resumo+=(i+1)+". "+x.data+" | "+x.categoria+" | "+x.descricao+" | "+money(x.valor)+" | "+(x.anexos?.length||0)+" arquivo(s)\n"});
+  zip.file("00_RESUMO_DO_MES.txt",resumo);
+  let total=ordered.reduce((s,x)=>s+(x.anexos?.length||0),0),done=0;
+  for(let i=0;i<ordered.length;i++){
+    const x=ordered[i], folder=zip.folder(String(i+1).padStart(2,"0")+"_"+safe(x.data+"_"+x.categoria+"_"+x.descricao).slice(0,90));
+    const usados=new Set();
+    for(let j=0;j<(x.anexos||[]).length;j++){
+      const f=x.anexos[j];done++;b.textContent="Arquivo "+done+" de "+total;
+      try{
+        const sr=await api("/api/file?path="+encodeURIComponent(f.path));
+        const rr=await fetch(sr.url);
+        if(!rr.ok)throw Error("falha ao baixar");
+        const blob=await rr.blob();
+        let nome=safe(f.name||("comprovante_"+(j+1)))||("comprovante_"+(j+1));
+        let base=nome,n=2;while(usados.has(nome)){const p=base.lastIndexOf(".");nome=p>0?base.slice(0,p)+"_"+n+base.slice(p):base+"_"+n;n++}usados.add(nome);
+        folder.file(nome,blob);
+      }catch(e){
+        folder.file("ERRO_"+(j+1)+".txt","Não foi possível incluir "+String(f.name||"arquivo")+": "+String(e.message||e));
+      }
+    }
+  }
+  b.textContent="Finalizando ZIP...";
+  const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="JR_Contador_"+comp+"_Arquivos.zip";
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  toast("Pacote ZIP gerado");
+}catch(e){toast(e.message||"Erro ao gerar ZIP")}finally{b.disabled=false;b.textContent=old}};
 $("loginBtn").onclick=async()=>{PASS=$("pass").value;try{let r=await api("/api/login",{method:"POST"});if(r.ok){sessionStorage.setItem("jrpass",PASS);$("login").style.display="none";await load()}}catch(e){$("loginMsg").textContent="Senha incorreta."}};$("pass").onkeydown=e=>{if(e.key==="Enter")$("loginBtn").click()};$("logout").onclick=()=>{sessionStorage.removeItem("jrpass");location.reload()};setup();if(PASS)api("/api/login",{method:"POST"}).then(r=>{if(r.ok){$("login").style.display="none";load()}}).catch(()=>{});
 </script></body></html>
