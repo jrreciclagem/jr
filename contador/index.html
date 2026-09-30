@@ -46,6 +46,10 @@ let seen=new Set(anexos.map(x=>x.sha256).filter(Boolean));
 for(let f of fs){
  let fd=new FormData();fd.append("file",f);
  let u=await api("/api/upload",{method:"POST",body:fd});
+ if(u.duplicate){
+   toast("Comprovante igual já cadastrado em "+(u.existing?.data||"")+" - "+(u.existing?.descricao||""));
+   continue;
+ }
  if(u.file.sha256&&seen.has(u.file.sha256)){
    await api("/api/delete-file",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({path:u.file.path})}).catch(()=>{});
    continue;
