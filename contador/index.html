@@ -95,7 +95,7 @@ window.openFiles=async id=>{
   const x=ITEMS.find(z=>z.id===id);if(!x?.anexos?.length)return toast("Sem anexos");
   $("viewerTitle").textContent=x.descricao||"Comprovantes";
   $("viewerMeta").textContent=new Date(x.data+"T12:00").toLocaleDateString("pt-BR")+" • "+x.categoria+" • "+x.anexos.length+" arquivo(s)";
-  $("viewerFiles").innerHTML=x.anexos.map((f,i)=>'<div class="item"><div class="row"><div style="min-width:0"><div class="title" style="word-break:break-word">'+esc(f.name||("Arquivo "+(i+1)))+'</div><div class="meta">'+esc(f.type||"arquivo")+(f.size?" • "+Math.max(1,Math.round(f.size/1024))+" KB":"")+'</div></div><div class="actions"><button onclick="previewFile(\''+id+'\','+i+')">Visualizar</button><button onclick="downloadFile(\''+id+'\','+i+')">Baixar</button></div></div></div>').join("");
+  $("viewerFiles").innerHTML=x.anexos.map((f,i)=>'<div class="item"><div class="row"><div style="min-width:0"><div class="title" style="word-break:break-word">'+esc(f.name||("Arquivo "+(i+1)))+'</div><div class="meta">'+esc(f.type||"arquivo")+(f.size?" • "+Math.max(1,Math.round(f.size/1024))+" KB":"")+'</div></div><div class="actions"><button onclick="previewFile(\''+id+'\','+i+')">Visualizar</button><button onclick="downloadFile(\''+id+'\','+i+')">Baixar</button><button onclick="deleteFile(\''+id+'\','+i+')">Excluir arquivo</button></div></div></div>').join("");
   $("viewerPreview").innerHTML='<div class="empty">Escolha um comprovante para visualizar.</div>';
   $("viewer").classList.add("on");
 };
@@ -122,6 +122,19 @@ window.downloadFile=async(id,i)=>{
     const r=await api("/api/file?path="+encodeURIComponent(f.path)),rr=await fetch(r.url),blob=await rr.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");
     a.href=url;a.download=f.name||"comprovante";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
   }catch(e){toast("Erro ao baixar arquivo")}
+};
+
+window.deleteFile=async(id,i)=>{
+  const x=ITEMS.find(z=>z.id===id),f=x?.anexos?.[i];if(!x||!f)return;
+  if(!confirm("Excluir somente este comprovante?\n\n"+(f.name||"Arquivo")))return;
+  try{
+    const anexos=(x.anexos||[]).filter((_,idx)=>idx!==i);
+    await api("/api/items/"+id,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({anexos})});
+    await load();
+    const atualizado=ITEMS.find(z=>z.id===id);
+    if(atualizado?.anexos?.length) await openFiles(id); else $("viewer").classList.remove("on");
+    toast("Comprovante excluído");
+  }catch(e){toast(e.message||"Erro ao excluir comprovante")}
 };
 $("viewerClose").onclick=()=>$("viewer").classList.remove("on");
 $("search").oninput=table;$("fcat").onchange=table;$("fst").onchange=table;$("month").onchange=load;$("monthNote").onchange=async()=>{await api("/api/months/"+$("month").value,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({observacao_geral:$("monthNote").value})});await load();toast("Observação salva")};$("sentBtn").onclick=async()=>{if(!confirm("Marcar este mês como enviado ao contador?"))return;await api("/api/months/"+$("month").value,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({observacao_geral:$("monthNote").value,enviado:true})});await load();toast("Mês enviado")}
