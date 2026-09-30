@@ -12,7 +12,7 @@ main{padding:27px}.top{display:flex;justify-content:space-between;gap:14px;align
 .modal{position:fixed;inset:0;background:rgba(5,22,28,.52);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.on{display:flex}.dialog{background:#fff;border-radius:17px;padding:19px;width:min(650px,100%);max-height:92vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.full{grid-column:1/-1}label{font-size:12px;font-weight:800;color:#54676d}textarea{min-height:82px}.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.empty{text-align:center;color:var(--muted);padding:26px}.note{font-size:13px;padding:11px;background:#eef8f5;border:1px solid #d4eee5;border-radius:11px;color:#285f52}
 .toast{position:fixed;right:18px;bottom:18px;background:#102b36;color:#fff;padding:11px 15px;border-radius:10px;display:none;z-index:50}.login{position:fixed;inset:0;background:#10262f;display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}.loginbox{width:min(390px,100%);background:#fff;border-radius:19px;padding:24px}.loginbox h1{margin:0 0 5px}.loginbox p{font-size:13px;color:var(--muted)}.loginbox input{width:100%;margin:7px 0 10px}.bottom{display:none}
 @media(max-width:900px){.app{display:block}.side{display:none}main{padding:15px 12px 75px}.top{align-items:flex-start;flex-direction:column}.cards{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.bottom{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:10}.bottom button{border:0;background:#fff;padding:10px 3px;font-size:10px;color:#5a6d73}.bottom button.on{color:#15856d;font-weight:900}.top h1{font-size:23px}}
-</style></head><body>
+</style><script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></head><body>
 <div class="login" id="login"><div class="loginbox"><h1>JR Reciclagem</h1><p>Fechamento do Contador • acesso administrativo</p><input id="pass" type="password" placeholder="Senha"><button class="primary" style="width:100%" id="loginBtn">Entrar</button><div id="loginMsg" class="meta"></div></div></div>
 <div class="app"><aside class="side"><div class="brand">JR Reciclagem<small>Fechamento do Contador</small></div><div class="nav"><button data-p="inicio" class="on">▣ Início</button><button data-p="lanc">≡ Lançamentos</button><button data-p="fechar">✓ Fechamento</button><button data-p="hist">◷ Histórico</button><button data-p="config">⚙ Configurações</button></div></aside>
 <main><div class="top"><div><h1>Fechamento do Contador</h1><div class="sub">Comprovantes online no celular e no PC.</div></div><div><select id="month"></select> <button class="primary" id="newBtn">+ Novo lançamento</button></div></div>
@@ -41,6 +41,42 @@ window.edit=id=>{let x=ITEMS.find(z=>z.id===id);$("eid").value=x.id;$("mtitle").
 window.del=async id=>{if(!confirm("Excluir este lançamento?"))return;await api("/api/items/"+id,{method:"DELETE"});await load();toast("Excluído")};window.openFiles=async id=>{let x=ITEMS.find(z=>z.id===id);if(!x?.anexos?.length)return toast("Sem anexos");for(let f of x.anexos){let r=await api("/api/file?path="+encodeURIComponent(f.path));window.open(r.url,"_blank")}}
 $("search").oninput=table;$("fcat").onchange=table;$("fst").onchange=table;$("month").onchange=load;$("monthNote").onchange=async()=>{await api("/api/months/"+$("month").value,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({observacao_geral:$("monthNote").value})});await load();toast("Observação salva")};$("sentBtn").onclick=async()=>{if(!confirm("Marcar este mês como enviado ao contador?"))return;await api("/api/months/"+$("month").value,{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({observacao_geral:$("monthNote").value,enviado:true})});await load();toast("Mês enviado")}
 $("reportBtn").onclick=()=>{let w=open("","_blank"),body='<h1>JR Reciclagem — '+$("month").selectedOptions[0].text+'</h1><p><b>Observações:</b> '+esc($("monthNote").value||"—")+'</p>';for(let c of CATS){let a=ITEMS.filter(x=>x.categoria===c);body+='<h2>'+c+'</h2>'+(a.length?'<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>Data</th><th>Descrição</th><th>Empresa</th><th>Valor</th><th>Status</th></tr>'+a.map(x=>'<tr><td>'+new Date(x.data+"T12:00").toLocaleDateString("pt-BR")+'</td><td>'+esc(x.descricao)+'</td><td>'+esc(x.empresa||"")+'</td><td>'+(x.valor?money(x.valor):"")+'</td><td>'+x.status+'</td></tr>').join("")+'</table>':'<p>Sem lançamentos.</p>')}w.document.write('<html><body style="font-family:Arial;padding:25px">'+body+'<script>onload=()=>print()<\/script></body></html>');w.document.close()}
-$("fullPdfBtn").onclick=async()=>{let b=$("fullPdfBtn"),old=b.textContent;try{b.disabled=true;b.textContent="Montando PDF...";let r=await fetch(API+"/api/month-pdf?competencia="+encodeURIComponent($("month").value),{headers:{"x-jr-password":PASS}});if(!r.ok){let d=await r.json().catch(()=>({}));throw Error(d.error||"Erro ao gerar PDF")}let blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="JR_Fechamento_"+$("month").value+".pdf";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);toast("PDF completo gerado")}catch(e){toast(e.message)}finally{b.disabled=false;b.textContent=old}};
+$("fullPdfBtn").onclick=async()=>{let b=$("fullPdfBtn"),old=b.textContent;try{
+b.disabled=true;b.textContent="Preparando...";
+if(!window.PDFLib)throw Error("Biblioteca do PDF não carregou. Atualize a página.");
+const {PDFDocument,StandardFonts,rgb}=window.PDFLib;
+const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);
+const clean=s=>String(s??"").normalize("NFC").replace(/[^\\x20-\\x7E\\u00C0-\\u00FF]/g," ");
+const wrap=(s,max=82)=>{let words=clean(s).split(/\\s+/),out=[],line="";for(let w of words){let n=line?line+" "+w:w;if(n.length>max){if(line)out.push(line);line=w}else line=n}if(line)out.push(line);return out};
+const addText=(title,lines)=>{let pg=pdf.addPage([595.28,841.89]),y=800;pg.drawText(clean(title),{x:42,y,size:18,font:bold,color:rgb(.06,.17,.21)});y-=30;for(let raw of lines){for(let ln of wrap(raw)){if(y<55){pg=pdf.addPage([595.28,841.89]);y=800}pg.drawText(clean(ln),{x:42,y,size:10,font});y-=15}}};
+const total=ITEMS.reduce((s,x)=>s+Number(x.valor||0),0),docs=ITEMS.reduce((s,x)=>s+(x.anexos?.length||0),0);
+let lines=["Competência: "+$("month").selectedOptions[0].text,"Lançamentos: "+ITEMS.length,"Comprovantes anexados: "+docs,"Valor total lançado: "+money(total),"Observações: "+($("monthNote").value||"Sem observações."),"","LANÇAMENTOS"];
+for(let x of [...ITEMS].sort((a,b)=>a.data.localeCompare(b.data)))lines.push(x.data+" | "+x.categoria+" | "+x.descricao+" | "+money(x.valor)+" | "+x.status+" | "+(x.anexos?.length||0)+" anexo(s)");
+addText("JR Reciclagem - Fechamento do Contador",lines);
+let ord=1,done=0;
+for(let x of [...ITEMS].sort((a,b)=>a.data.localeCompare(b.data))){
+ for(let f of (x.anexos||[])){
+   done++;b.textContent="Comprovante "+done+" de "+docs;
+   try{
+     let sr=await api("/api/file?path="+encodeURIComponent(f.path)),rr=await fetch(sr.url),ab=await rr.arrayBuffer();
+     let name=String(f.name||"comprovante"),type=String(f.type||"").toLowerCase(),label=ord+". "+x.data+" - "+x.categoria+" - "+x.descricao+" - "+name;
+     if(type.includes("pdf")||name.toLowerCase().endsWith(".pdf")){
+       let src=await PDFDocument.load(ab,{ignoreEncryption:true}),pages=await pdf.copyPages(src,src.getPageIndices());
+       pages.forEach((pg,i)=>{pdf.addPage(pg);if(i===0){pg.drawRectangle({x:0,y:0,width:pg.getWidth(),height:18,color:rgb(1,1,1),opacity:.9});pg.drawText(clean(label).slice(0,100),{x:10,y:5,size:7,font})}});
+     }else{
+       let bytes=new Uint8Array(ab),img;
+       if(type.includes("png")||/\\.png$/i.test(name))img=await pdf.embedPng(bytes);else img=await pdf.embedJpg(bytes);
+       let pg=pdf.addPage([595.28,841.89]);pg.drawText(clean(label).slice(0,100),{x:35,y:812,size:9,font:bold});
+       let sc=Math.min(525/img.width,745/img.height,1),w=img.width*sc,h=img.height*sc;
+       pg.drawImage(img,{x:(595.28-w)/2,y:35+(745-h)/2,width:w,height:h});
+     }
+   }catch(e){addText("Comprovante com erro",[x.data+" - "+x.descricao,String(f.name||""),"Não foi possível incorporar este arquivo: "+e.message])}
+   ord++;
+ }
+}
+b.textContent="Finalizando PDF...";
+let bytes=await pdf.save(),blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+a.href=url;a.download="JR_Fechamento_"+$("month").value+".pdf";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast("PDF completo gerado");
+}catch(e){toast(e.message||"Erro ao gerar PDF")}finally{b.disabled=false;b.textContent=old}};
 $("loginBtn").onclick=async()=>{PASS=$("pass").value;try{let r=await api("/api/login",{method:"POST"});if(r.ok){sessionStorage.setItem("jrpass",PASS);$("login").style.display="none";await load()}}catch(e){$("loginMsg").textContent="Senha incorreta."}};$("pass").onkeydown=e=>{if(e.key==="Enter")$("loginBtn").click()};$("logout").onclick=()=>{sessionStorage.removeItem("jrpass");location.reload()};setup();if(PASS)api("/api/login",{method:"POST"}).then(r=>{if(r.ok){$("login").style.display="none";load()}}).catch(()=>{});
 </script></body></html>
