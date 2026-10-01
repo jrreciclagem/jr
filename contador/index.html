@@ -191,8 +191,12 @@ $("zipBtn").onclick=async()=>{let b=$("zipBtn"),old=b.textContent;try{
   ordered.forEach((x,i)=>{resumo+=(i+1)+". "+x.data+" | "+x.categoria+" | "+x.descricao+" | "+money(x.valor)+" | "+(x.anexos?.length||0)+" arquivo(s)\n"});
   zip.file("00_RESUMO_DO_MES.txt",resumo);
   let total=ordered.reduce((s,x)=>s+(x.anexos?.length||0),0),done=0;
+  const catFolders=new Map(CATS.map((cat,i)=>[cat,String(i+1).padStart(2,"0")+" - "+safe(cat)]));
   for(let i=0;i<ordered.length;i++){
-    const x=ordered[i], folder=zip.folder(String(i+1).padStart(2,"0")+"_"+safe(x.data+"_"+x.categoria+"_"+x.descricao).slice(0,90));
+    const x=ordered[i];
+    const catName=catFolders.get(x.categoria)||("99 - "+safe(x.categoria||"Outros"));
+    const catFolder=zip.folder(catName);
+    const itemFolder=catFolder.folder(safe(x.data+" - "+x.descricao).slice(0,90)||("Lancamento "+(i+1)));
     const usados=new Set();
     for(let j=0;j<(x.anexos||[]).length;j++){
       const f=x.anexos[j];done++;b.textContent="Arquivo "+done+" de "+total;
@@ -203,9 +207,9 @@ $("zipBtn").onclick=async()=>{let b=$("zipBtn"),old=b.textContent;try{
         const blob=await rr.blob();
         let nome=safe(f.name||("comprovante_"+(j+1)))||("comprovante_"+(j+1));
         let base=nome,n=2;while(usados.has(nome)){const p=base.lastIndexOf(".");nome=p>0?base.slice(0,p)+"_"+n+base.slice(p):base+"_"+n;n++}usados.add(nome);
-        folder.file(nome,blob);
+        itemFolder.file(nome,blob);
       }catch(e){
-        folder.file("ERRO_"+(j+1)+".txt","Não foi possível incluir "+String(f.name||"arquivo")+": "+String(e.message||e));
+        itemFolder.file("ERRO_"+(j+1)+".txt","Não foi possível incluir "+String(f.name||"arquivo")+": "+String(e.message||e));
       }
     }
   }
