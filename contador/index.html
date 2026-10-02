@@ -178,9 +178,15 @@ a.href=url;a.download="JR_Fechamento_"+$("month").value+".pdf";document.body.app
 }catch(e){toast(e.message||"Erro ao gerar PDF")}finally{b.disabled=false;b.textContent=old}};
 
 $("zipBtn").onclick=async()=>{let b=$("zipBtn"),old=b.textContent;try{
-  b.disabled=true;b.textContent="Preparando ZIP...";
+  b.disabled=true;b.textContent="Carregando dados do mês...";
   if(!window.JSZip)throw Error("Biblioteca ZIP não carregou. Atualize a página.");
-  const zip=new JSZip(),comp=$("month").value;
+  const comp=$("month").value;
+  const fresh=await api("/api/items?competencia="+encodeURIComponent(comp));
+  ITEMS=fresh.items||[];
+  render();
+  if(!ITEMS.length)throw Error("Nenhum lançamento encontrado em "+$("month").selectedOptions[0].text+". O ZIP não foi gerado.");
+  b.textContent="Preparando ZIP...";
+  const zip=new JSZip();
   const safe=s=>String(s||"arquivo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9._ -]/g,"_").replace(/\s+/g," ").trim();
   const ordered=[...ITEMS].sort((a,b)=>a.data.localeCompare(b.data));
   let resumo="JR RECICLAGEM - FECHAMENTO DO CONTADOR\nCompetência: "+$("month").selectedOptions[0].text+"\n\n";
